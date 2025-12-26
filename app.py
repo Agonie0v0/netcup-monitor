@@ -267,7 +267,7 @@ def handle_config():
     if not session.get('logged_in'): return jsonify({})
     return jsonify(load_config())
 
-# 安全修复：Run Now API 增加登录校验
+# Run Now API 增加登录校验
 @app.route('/api/run_now', methods=['POST'])
 def manual_run():
     if not session.get('logged_in'): return jsonify({"status": "error"}), 401
@@ -380,13 +380,13 @@ class EnhancedVertexClient:
             return True
         except: return False
 
-# 新增：统一通知函数 (TG & WeChat)
+# 新增：统一通知函数 (TG & WeChat Webhook & WeChat App)
 def send_notifications(config):
     global last_notify_time
     # 2小时冷却时间
     if time.time() - last_notify_time < 7200: return
 
-    notify_mode = config.get("notify_mode", "telegram") # telegram, wechat, all
+    notify_mode = config.get("notify_mode", "telegram") # telegram, wechat, wechat_app, all
     
     try:
         servers = config.get("servers", [])
@@ -423,7 +423,7 @@ def send_notifications(config):
         tg_text = "\n".join(tg_lines)
         wx_text = "\n".join(wx_lines)
         
-        # 发送 Telegram
+        # 1. 发送 Telegram
         if notify_mode in ['telegram', 'all']:
             tg_conf = config.get("telegram_config", {})
             token = tg_conf.get("bot_token")
@@ -434,15 +434,45 @@ def send_notifications(config):
                     logger.info("Telegram 通知发送成功")
                 except Exception as e: logger.error(f"Telegram 发送失败: {e}")
         
-        # 发送 WeChat
+        # 2. 发送 企业微信 Webhook (机器人)
         if notify_mode in ['wechat', 'all']:
             wx_key = config.get("wechat_config", {}).get("key")
             if wx_key:
                 try:
                     url = f"https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key={wx_key}"
                     requests.post(url, json={"msgtype": "markdown", "markdown": {"content": wx_text}}, timeout=10)
-                    logger.info("企业微信通知发送成功")
-                except Exception as e: logger.error(f"企业微信发送失败: {e}")
+                    logger.info("企业微信(Webhook)通知发送成功")
+                except Exception as e: logger.error(f"企业微信(Webhook)发送失败: {e}")
+
+        # 3. 发送 企业微信应用 (App)
+        if notify_mode in ['wechat_app', 'all']:
+            try:
+                wca = config.get("wechat_app_config", {})
+                corpid = wca.get("corpid")
+                secret = wca.get("secret")
+                agentid = wca.get("agentid")
+                
+                if corpid and secret and agentid:
+                    # 获取 Token
+                    token_url = f"https://qyapi.weixin.qq.com/cgi-bin/gettoken?corpid={corpid}&corpsecret={secret}"
+                    r = requests.get(token_url, timeout=10)
+                    token_data = r.json()
+                    
+                    if token_data.get("errcode") == 0:
+                        access_token = token_data.get("access_token")
+                        # 发送消息
+                        send_url = f"https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token={access_token}"
+                        payload = {
+                            "touser": "@all",
+                            "msgtype": "markdown",
+                            "agentid": agentid,
+                            "markdown": {"content": wx_text}
+                        }
+                        requests.post(send_url, json=payload, timeout=10)
+                        logger.info("企业微信(应用)通知发送成功")
+                    else:
+                        logger.error(f"企业微信应用Token获取失败: {token_data}")
+            except Exception as e: logger.error(f"企业微信(应用)发送失败: {e}")
                 
         last_notify_time = time.time()
         
@@ -526,12 +556,27 @@ def run_monitor_task():
             if tr and tr.status_code == 200: torrents = tr.json()
             
             if is_throttled:
-                # 1. 优先处理 HR 种子：不删、不暂停，只限速
-                hr_hashes = [t['hash'] for t in torrents if t.get('category') in HR_CATS]
-                if hr_hashes:
-                    # 批量设置限速
-                    qb_req(ip, "/torrents/setUploadLimit", data={"hashes": "|".join(hr_hashes), "limit": HR_LIMIT_BYTES})
-                    logger.info(f"[{name}] HR策略: 对 {len(hr_hashes)} 个种子限制上传速度为 {HR_LIMIT_KB} KB/s")
+                # 1. 优先处理 HR 种子
+                hr_hashes_seeding = []
+                hr_hashes_downloading = []
+
+                for t in torrents:
+                    if t.get('category') in HR_CATS:
+                        # progress >= 1 表示下载完成
+                        if t.get('progress', 0) >= 1:
+                            hr_hashes_seeding.append(t['hash'])
+                        else:
+                            hr_hashes_downloading.append(t['hash'])
+
+                # 1.1 做种中的 HR 种子 -> 上传限速
+                if hr_hashes_seeding:
+                    qb_req(ip, "/torrents/setUploadLimit", data={"hashes": "|".join(hr_hashes_seeding), "limit": HR_LIMIT_BYTES})
+                    logger.info(f"[{name}] HR策略(做种): 限制 {len(hr_hashes_seeding)} 个种子上传速度")
+
+                # 1.2 下载中的 HR 种子 -> 暂停
+                if hr_hashes_downloading:
+                    qb_smart_action(ip, "stop", "|".join(hr_hashes_downloading))
+                    logger.info(f"[{name}] HR策略(下载中): 暂停 {len(hr_hashes_downloading)} 个未完成种子")
 
                 # 2. 删除：既不在保留分类，也不在 HR 分类中的
                 non_keep = [t['hash'] for t in torrents if t.get('category') not in KEEP_CATS and t.get('category') not in HR_CATS]
