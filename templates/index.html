@@ -210,7 +210,8 @@
                 </div>
                 <div id="serverContainer"></div>
                 <div class="p-3 bg-light border-top text-secondary small">
-                    <i class="bi bi-info-circle me-1"></i> <strong>关于“不托管”：</strong> 开启后，脚本只会记录该实例的流量和限速状态，<strong>不会</strong>对QB里的种子进行删除或暂停操作，也<strong>不会</strong>参与Vertex的任何联动。
+                    <div class="mb-1"><i class="bi bi-info-circle me-1"></i> <strong>Client ID：</strong> 请填写在Vertex下载器界面的信息。</div>
+                    <div><i class="bi bi-toggle-on me-1"></i> <strong>关于“不托管”：</strong> 开启后，脚本只会记录该实例的流量和限速状态，<strong>不会</strong>对QB里的种子进行删除或暂停操作，也<strong>不会</strong>参与Vertex的任何联动。</div>
                 </div>
             </div>
         </div>
@@ -232,11 +233,7 @@
                             <label class="col-sm-3 col-form-label">端口</label>
                             <div class="col-sm-9"><input id="qb_port" type="number" class="form-control w-compact" placeholder="8080"></div>
                         </div>
-                        <div class="mb-3">
-                            <label class="form-label">排除 IP (逗号分隔)</label>
-                            <textarea id="qb_exclude" class="form-control" rows="2" placeholder="192.168.1.5, 10.0.0.1"></textarea>
                         </div>
-                    </div>
                     <div class="col-md-6">
                         <h5 class="fw-bold mb-3 border-bottom pb-2">Vertex 联动配置</h5>
                         <div class="mb-3 row align-items-center">
@@ -244,11 +241,11 @@
                             <div class="col-sm-9"><input id="vt_url" class="form-control w-medium" placeholder="http://192.168.1.2:3000"></div>
                         </div>
                         <div class="mb-3 row align-items-center">
-                            <label class="col-sm-3 col-form-label">API 用户</label>
+                            <label class="col-sm-3 col-form-label">用户名</label>
                             <div class="col-sm-9"><input id="vt_user" class="form-control w-medium"></div>
                         </div>
                         <div class="mb-3 row align-items-center">
-                            <label class="col-sm-3 col-form-label">API 密码</label>
+                            <label class="col-sm-3 col-form-label">密码</label>
                             <div class="col-sm-9"><input id="vt_pass" type="password" class="form-control w-medium"></div>
                         </div>
                         <div class="mb-3 row align-items-center">
@@ -352,14 +349,12 @@
         <div id="view-accounts" class="tab-view d-none">
              <div class="white-card">
                 <div class="card-header-custom"><div class="card-title">Netcup SCP 账号</div><button class="btn btn-sm btn-primary" onclick="addSoapRow()"><i class="bi bi-plus-lg"></i> 添加</button></div>
-                <!-- 新增：WSDL URL 配置 -->
                 <div class="p-3 border-bottom bg-light">
                     <div class="d-flex align-items-center gap-2">
                         <label class="fw-bold small text-secondary text-nowrap">WSDL 接口地址:</label>
                         <input id="soap_wsdl" class="form-control form-control-sm font-mono w-100" placeholder="https://www.servercontrolpanel.de/WSEndUser?wsdl">
                     </div>
                 </div>
-                <!-- 修正：表头更名为 SCP 密码 -->
                 <div class="config-header">
                     <div class="cfg-soap-id">客户号 (Customer ID)</div>
                     <div class="cfg-soap-pass">SCP 密码</div>
@@ -544,7 +539,8 @@
     
     function saveConfig() {
         if(!isLoggedIn)return; 
-        config.qb_config={user:document.getElementById('qb_user').value,password:document.getElementById('qb_pass').value,port:parseInt(document.getElementById('qb_port').value),exclude_qb_ips:document.getElementById('qb_exclude').value.split(',').filter(x=>x)};
+        // 移除了 exclude_qb_ips
+        config.qb_config={user:document.getElementById('qb_user').value,password:document.getElementById('qb_pass').value,port:parseInt(document.getElementById('qb_port').value)};
         config.vertex_config={api_url:document.getElementById('vt_url').value,api_user:document.getElementById('vt_user').value,api_password:document.getElementById('vt_pass').value,container_name:document.getElementById('vt_container').value};
         delete config.rss_dir; config.rss_ids = document.getElementById('rss_ids').value.split(',').map(s=>s.trim()).filter(x=>x);
         config.keep_categories=document.getElementById('keep_cats').value.split(',').filter(x=>x); 
@@ -559,14 +555,13 @@
     }
     function triggerRun() { fetch('/api/run_now', {method:'POST'}).then(()=>showToast('已触发刷新')); }
 
-    // 新增：加载日志
     function loadLogs() {
         const viewer = document.getElementById('logViewer');
         viewer.innerHTML = "正在刷新日志...";
         fetch('/api/logs').then(r => r.json()).then(data => {
             if (data.status === 'success') {
                 viewer.innerText = data.data || "（日志文件为空）";
-                viewer.scrollTop = viewer.scrollHeight; // 滚动到底部
+                viewer.scrollTop = viewer.scrollHeight;
             } else {
                 viewer.innerText = "无法加载日志: " + (data.message || "未知错误");
             }
