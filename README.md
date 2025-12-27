@@ -160,7 +160,7 @@ docker compose up -d --force-recreate
 添加你需要监控的 VPS 实例：
 * **名称**：自定义别名。
 * **IP 地址**：必须与 Netcup 后台显示的 IP 一致（用于匹配 API 数据）。
-* **Client ID**：对应 Vertex 中下载器的名称/ID（用于更新 RSS 规则）。
+* **Client ID**：对应 Vertex 中下载器的ID（用于更新 RSS 规则）。
 * **不托管 (Unmanaged)**：开启后，脚本只监控流量和状态，**不执行**任何删除、暂停操作。
 
 ## 📸 界面预览
