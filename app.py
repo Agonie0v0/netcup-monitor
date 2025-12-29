@@ -28,7 +28,6 @@ def setup_logging():
     logger.setLevel(logging.INFO)
     if logger.hasHandlers(): logger.handlers.clear()
     
-    # 修改：增强日志格式，包含具体时间
     formatter = logging.Formatter('%(asctime)s - %(levelname)s - [%(funcName)s:%(lineno)d] - %(message)s')
     
     sh = logging.StreamHandler()
@@ -37,7 +36,6 @@ def setup_logging():
     
     if not os.path.exists(DATA_DIR): os.makedirs(DATA_DIR)
     
-    # 修改：日志轮转策略，每天午夜轮转，保留 1 天备份 (自动清除超过24-48小时的日志)
     fh = TimedRotatingFileHandler(filename=LOG_FILE, when='midnight', interval=1, backupCount=1, encoding='utf-8')
     fh.setFormatter(formatter)
     logger.addHandler(fh)
@@ -289,14 +287,12 @@ def manual_run():
     scheduler.get_job('monitor_job').modify(next_run_time=datetime.datetime.now())
     return jsonify({"status": "ok"})
 
-# 新增：日志获取接口
 @app.route('/api/logs')
 def get_logs():
     if not session.get('logged_in'): return jsonify({"status": "error"}), 401
     try:
         if os.path.exists(LOG_FILE):
             with open(LOG_FILE, 'r', encoding='utf-8') as f:
-                # 读取所有内容，因为有轮转，文件不会无限大
                 content = f.read()
                 return jsonify({"status": "success", "data": content})
         return jsonify({"status": "success", "data": "暂无日志文件"})
@@ -433,7 +429,6 @@ def send_notifications(config):
         
         tg_lines = [f"📊 <b>服务器状态简报</b> ({datetime.datetime.now().strftime('%H:%M')})", ""]
         wx_lines = [f"### 📊 服务器状态简报 ({datetime.datetime.now().strftime('%H:%M')})"]
-        # 新增：纯文本格式，用于适配普通微信应用推送
         plain_lines = [f"📊 服务器状态简报 ({datetime.datetime.now().strftime('%H:%M')})", ""]
         
         for s in servers:
@@ -446,17 +441,14 @@ def send_notifications(config):
             
             status_icon = "✅ 高速" if state == 'high' else "⚠️ 限速"
             
-            # HTML (Telegram)
             tg_lines.append(f"<b>{name}</b>")
             tg_lines.append(f"当前: {status_icon} (持续 {format_duration(dur)})")
             tg_lines.append(f"今日: 高速 {format_duration(t_day_high)} | 限速 {format_duration(t_day_throttled)}\n")
             
-            # Markdown (WeChat Webhook)
             wx_lines.append(f"**{name}**")
             wx_lines.append(f"> 当前: {status_icon} (持续 {format_duration(dur)})")
             wx_lines.append(f"> 今日: 高速 {format_duration(t_day_high)} | 限速 {format_duration(t_day_throttled)}\n")
             
-            # Pure Text (WeChat App)
             plain_lines.append(f"【{name}】")
             plain_lines.append(f"当前: {status_icon} (持续 {format_duration(dur)})")
             plain_lines.append(f"今日: 高速 {format_duration(t_day_high)} | 限速 {format_duration(t_day_throttled)}\n")
@@ -467,7 +459,6 @@ def send_notifications(config):
         wx_text = "\n".join(wx_lines)
         plain_text = "\n".join(plain_lines)
         
-        # 1. Telegram
         if notify_mode in ['telegram', 'all']:
             tg_conf = config.get("telegram_config", {})
             token = tg_conf.get("bot_token")
@@ -478,7 +469,6 @@ def send_notifications(config):
                     logger.info("Telegram 通知发送成功")
                 except Exception as e: logger.error(f"Telegram 发送失败: {e}")
         
-        # 2. Webhook
         if notify_mode in ['wechat', 'all']:
             wx_key = config.get("wechat_config", {}).get("key")
             if wx_key:
@@ -488,31 +478,20 @@ def send_notifications(config):
                     logger.info("企业微信(Webhook)通知发送成功")
                 except Exception as e: logger.error(f"企业微信(Webhook)发送失败: {e}")
 
-        # 3. App
         if notify_mode in ['wechat_app', 'all']:
             try:
                 wca = config.get("wechat_app_config", {})
                 corpid = wca.get("corpid")
                 secret = wca.get("secret")
                 agentid = wca.get("agentid")
-                
                 if corpid and secret and agentid:
                     token_url = f"https://qyapi.weixin.qq.com/cgi-bin/gettoken?corpid={corpid}&corpsecret={secret}"
                     r = requests.get(token_url, timeout=10)
                     token_data = r.json()
-                    
                     if token_data.get("errcode") == 0:
                         access_token = token_data.get("access_token")
                         send_url = f"https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token={access_token}"
-                        
-                        # 修改：使用纯文本 (text) 替代 markdown，适配普通微信显示
-                        payload = {
-                            "touser": "@all",
-                            "msgtype": "text",
-                            "agentid": agentid,
-                            "text": {"content": plain_text}
-                        }
-                        
+                        payload = {"touser": "@all", "msgtype": "text", "agentid": agentid, "text": {"content": plain_text}}
                         requests.post(send_url, json=payload, timeout=10)
                         logger.info("企业微信(应用)通知发送成功")
                     else:
@@ -552,9 +531,13 @@ def run_monitor_task():
             return None
         
     def qb_smart_action(ip, action, hashes):
+        # 兼容性修复：对于 start 动作，优先尝试 resume，因为这是 v2 API 标准
+        if action == 'start':
+            action = 'resume'
+            
         r = qb_req(ip, f"/torrents/{action}", data={"hashes": hashes})
         if not r or r.status_code not in [200, 204]:
-            fallback = {'stop': 'pause', 'start': 'resume'}
+            fallback = {'stop': 'pause', 'resume': 'start'}
             if action in fallback: 
                 logger.warning(f"QB 动作 {action} 失败，尝试 fallback: {fallback[action]}")
                 qb_req(ip, f"/torrents/{fallback[action]}", data={"hashes": hashes})
@@ -600,14 +583,9 @@ def run_monitor_task():
             tr = qb_req(ip, "/torrents/info")
             if tr and tr.status_code == 200: torrents = tr.json()
             
-            # Create a map for easy lookup if needed (unused for now but good for debug)
-            # torrent_map = {t['hash']: t for t in torrents}
-            
-            # Restoration file path
             restore_file = os.path.join(DATA_DIR, f'restore_{ip}.json')
 
             if is_throttled:
-                # Load existing restoration data
                 restore_data = {}
                 if os.path.exists(restore_file):
                     try:
@@ -617,7 +595,6 @@ def run_monitor_task():
                 
                 data_changed = False
                 
-                # 1. Prioritize HR torrents
                 hr_hashes_seeding = []
                 hr_hashes_downloading = []
 
@@ -626,15 +603,12 @@ def run_monitor_task():
                     if t.get('category') in HR_CATS:
                         if t.get('progress', 0) >= 1:
                             hr_hashes_seeding.append(t_hash)
-                            # Record original limit if not already recorded
-                            # This ensures we capture the limit set by RSS BEFORE we throttle it
                             if t_hash not in restore_data:
                                 restore_data[t_hash] = t.get('up_limit', -1)
                                 data_changed = True
                         else:
                             hr_hashes_downloading.append(t_hash)
                 
-                # Save restoration data if updated
                 if data_changed:
                     try:
                         with open(restore_file, 'w', encoding='utf-8') as f:
@@ -642,39 +616,42 @@ def run_monitor_task():
                     except Exception as e:
                         logger.error(f"[{name}] Failed to save restore data: {e}")
 
-                # 1.1 HR Seeding -> Limit Upload
                 if hr_hashes_seeding:
                     qb_req(ip, "/torrents/setUploadLimit", data={"hashes": "|".join(hr_hashes_seeding), "limit": HR_LIMIT_BYTES})
                     logger.info(f"[{name}] HR Policy (Seeding): Limited {len(hr_hashes_seeding)} torrents")
 
-                # 1.2 HR Downloading -> Pause
                 if hr_hashes_downloading:
                     qb_smart_action(ip, "stop", "|".join(hr_hashes_downloading))
                     logger.info(f"[{name}] HR Policy (Downloading): Paused {len(hr_hashes_downloading)} torrents")
 
-                # 2. Delete non-keep / non-HR
                 non_keep = [t['hash'] for t in torrents if t.get('category') not in KEEP_CATS and t.get('category') not in HR_CATS]
                 if non_keep:
                     qb_req(ip, "/torrents/delete", data={"hashes": "|".join(non_keep), "deleteFiles": "true"})
                     logger.info(f"[{name}] Deleted {len(non_keep)} non-keep torrents")
 
-                # 3. Pause Keep (non-HR)
                 keep_active = [t['hash'] for t in torrents if t.get('category') in KEEP_CATS and t.get('category') not in HR_CATS and t.get('state') not in ['stoppedUP', 'stoppedDL', 'pausedUP', 'pausedDL']]
                 if keep_active:
                     qb_smart_action(ip, "stop", "|".join(keep_active))
                     logger.info(f"[{name}] Paused {len(keep_active)} keep torrents")
+                
+                # 重要修复：只要处于限速状态，必须保证 restore_file 存在
+                # 即使没有 HR 种子限速数据，文件本身的存在也是“限速中”的标记
+                # 这样恢复逻辑 (if os.path.exists(restore_file)) 才能被触发
+                if not os.path.exists(restore_file):
+                    try:
+                        with open(restore_file, 'w', encoding='utf-8') as f:
+                            json.dump(restore_data, f)
+                    except Exception as e:
+                        logger.error(f"[{name}] Failed to create throttle flag file: {e}")
 
             else:
-                # Recovery Mode: Only triggered if restore file exists
                 if os.path.exists(restore_file):
                     logger.info(f"[{name}] Detected speed recovery, restoring states...")
                     
-                    # 1. Restore upload limits
                     try:
                         with open(restore_file, 'r', encoding='utf-8') as f:
                             restore_data = json.load(f)
                         
-                        # Group by limit for fewer API calls
                         limit_groups = {}
                         for t_hash, limit in restore_data.items():
                             if limit not in limit_groups: limit_groups[limit] = []
@@ -687,10 +664,10 @@ def run_monitor_task():
                     except Exception as e:
                         logger.error(f"[{name}] Failed to restore limits: {e}")
                     
-                    # 2. Resume all tasks (to ensure paused ones start)
-                    qb_smart_action(ip, "start", "all")
+                    # 修复：使用 resume 替代 start，并恢复所有种子
+                    qb_smart_action(ip, "resume", "all")
+                    logger.info(f"[{name}] Resumed all torrents")
                     
-                    # 3. Clean up
                     try: os.remove(restore_file)
                     except: pass
                 
