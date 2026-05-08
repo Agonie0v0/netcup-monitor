@@ -1,6 +1,6 @@
 <div align="center">
 
-  # 📊 Netcup Monitor Pro
+  # 📊 Netcup Monitor Pro *NC改了接口，项目失效了
 
   **专为 Netcup RS/VPS 打造的智能化流量监控与自动化流控面板**
 
