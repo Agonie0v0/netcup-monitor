@@ -351,7 +351,7 @@ class EnhancedVertexClient:
             if not self.base_url or not user: return None
             s = requests.Session()
             try: s.get(f"{self.base_url}/login", timeout=5) 
-            except: pass
+            except Exception: pass
             payloads = [{"username": user, "password": pwd}, {"username": user, "password": hashlib.md5(pwd.encode()).hexdigest()}]
             for p in payloads:
                 try:
@@ -361,7 +361,7 @@ class EnhancedVertexClient:
                         self._save_sid(sid)
                         logger.info("Vertex 重新登录成功，获取新 SID")
                         return sid
-                except: continue
+                except Exception: continue
             logger.warning("Vertex 登录失败")
             return None
         except Exception as e: 
@@ -373,7 +373,7 @@ class EnhancedVertexClient:
             if "vertex_config" not in full: full["vertex_config"] = {}
             full["vertex_config"]["connect_sid"] = sid
             save_config_file(full)
-        except: pass
+        except Exception: pass
     def list_rss_rules(self):
         sid = self.conf.get("connect_sid")
         data = self._do_list(sid)
@@ -389,7 +389,7 @@ class EnhancedVertexClient:
                 res_json = r.json()
                 if res_json.get("success"): return res_json.get("data", [])
             return None
-        except: return None
+        except Exception: return None
     def update_rss(self, rss_data):
         sid = self.conf.get("connect_sid")
         if not self._do_update(rss_data, sid):
@@ -591,7 +591,7 @@ def run_monitor_task():
                     try:
                         with open(restore_file, 'r', encoding='utf-8') as f:
                             restore_data = json.load(f)
-                    except: pass
+                    except Exception: pass
                 
                 data_changed = False
                 
@@ -669,7 +669,7 @@ def run_monitor_task():
                     logger.info(f"[{name}] Resumed all torrents")
                     
                     try: os.remove(restore_file)
-                    except: pass
+                    except Exception: pass
                 
     target_rss_ids = config.get("rss_ids", [])
     if target_rss_ids and config.get("vertex_config", {}).get("use_api_update", True):
