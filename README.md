@@ -1,6 +1,6 @@
 <div align="center">
 
-  # 📊 Netcup Monitor Pro *NC改了接口，项目失效了
+  # 📊 Netcup Monitor Pro
 
   **专为 Netcup RS/VPS 打造的智能化流量监控与自动化流控面板**
 
@@ -25,7 +25,7 @@
 
 **Netcup Monitor Pro** 解决了 Netcup 用户最大的痛点：**限速（Throttling）后的自动化处理,保证服务器以最快的速度恢复高速状态**。
 
-不同于普通的监控脚本，本项目通过对接 Netcup 官方 SOAP API 精准识别服务器状态。当检测到限速时，它能自动指挥 **qBittorrent** 和 **Vertex** 进行精细化的流量规避，保证服务器快速恢复高速状态，并在限速解除后自动恢复生产，实现真正的“无人值守”。
+不同于普通的监控脚本，本项目通过对接 Netcup 官方全新 **SCP REST API**（基于 Keycloak OAuth2/OIDC 认证）精准识别服务器状态。当检测到限速时，它能自动指挥 **qBittorrent** 和 **Vertex** 进行精细化的流量规避，保证服务器快速恢复高速状态，并在限速解除后自动恢复生产，实现真正的“无人值守”。
 
 <h2 id="features">✨ 功能特性</h2>
 

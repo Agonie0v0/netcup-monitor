@@ -348,14 +348,23 @@
 
         <div id="view-accounts" class="tab-view d-none">
              <div class="white-card">
-                <div class="card-header-custom"><div class="card-title">Netcup SCP 账号</div><button class="btn btn-sm btn-primary" onclick="addSoapRow()"><i class="bi bi-plus-lg"></i> 添加</button></div>
+                <div class="card-header-custom">
+                    <div class="card-title">Netcup SCP 账号 (REST API)</div>
+                    <div>
+                        <button class="btn btn-sm btn-outline-primary me-2" onclick="testScpConnection()"><i class="bi bi-patch-check"></i> 测试连接</button>
+                        <button class="btn btn-sm btn-primary" onclick="addSoapRow()"><i class="bi bi-plus-lg"></i> 添加</button>
+                    </div>
+                </div>
                 <div class="config-header">
                     <div class="cfg-soap-id">客户号 (Customer ID)</div>
                     <div class="cfg-soap-pass">SCP 密码</div>
                     <div class="cfg-soap-action"></div>
                 </div>
                 <div id="soapContainer"></div>
+                <div class="mt-3 p-3 bg-light rounded small text-secondary">
+                    <i class="bi bi-info-circle me-1"></i> Netcup 现已切换至全新 SCP REST API。输入您的 Netcup 客户号（如 <code>123456</code>）与 SCP 登录密码即可自动完成 Keycloak 认证与状态同步。
                 </div>
+            </div>
         </div>
 
         <div id="view-logs" class="tab-view d-none">
@@ -561,6 +570,35 @@
         fetch('/api/config',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(config)}).then(r=>r.json()).then(res=>showToast(res.status==='success'?'配置已保存':'保存失败',res.status==='success'?'success':'error'));
     }
     function triggerRun() { fetch('/api/run_now', {method:'POST'}).then(()=>showToast('已触发刷新')); }
+    
+    function testScpConnection() {
+        if(!isLoggedIn) return;
+        showToast('正在测试 Netcup SCP 连接...', 'info');
+        fetch('/api/test_scp', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(config)
+        }).then(r => r.json()).then(res => {
+            if (res.status === 'success') {
+                let msg = res.message || '连接成功';
+                if (res.details && res.details.length > 0) {
+                    msg += '\n\n' + res.details.join('\n');
+                }
+                alert(msg);
+                showToast('SCP 连接测试成功', 'success');
+            } else {
+                let msg = '测试失败: ' + (res.message || '未知错误');
+                if (res.details && res.details.length > 0) {
+                    msg += '\n\n' + res.details.join('\n');
+                }
+                alert(msg);
+                showToast('SCP 连接测试失败', 'error');
+            }
+        }).catch(err => {
+            alert('请求异常: ' + err);
+            showToast('请求异常', 'error');
+        });
+    }
 
     function loadLogs() {
         const viewer = document.getElementById('logViewer');

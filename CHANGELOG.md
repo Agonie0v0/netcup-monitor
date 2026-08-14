@@ -1,3 +1,14 @@
+[v1.2.0] - 2026-08-14
+
+Fixed (重要修复)
+
+- **Netcup 接口迁移**：彻底重构 Netcup 监控接口，全面废弃已下线的 legacy SOAP API (`WSEndUser?wsdl`)，升级为 Netcup 官方全新 **SCP REST API** (`scp-core/api/v1`)。
+- **Keycloak OAuth2/OIDC 认证**：实现自动 Token 获取、自动刷新及内存缓存机制，同时支持 `Customer ID + 密码` (Password Grant) 与 `Refresh Token` 认证方式。
+- **实例状态与限速检测**：适配全新 `Server` 与 `ServerInterface` 数据结构，精准提取各网卡 `trafficThrottled` 限速标记，并自动关联 IPv4 / IPv6 地址与实例别名。
+- **向下兼容**：自动兼容现有的 `soap_config` 历史配置文件，用户无需重新迁移配置即可无缝升级。
+- **依赖瘦身**：移除 `zeep` 和 `lxml` 依赖，显著降低 Docker 镜像体积并加快构建速度。
+- **面板增强**：在 SCP 账号管理页面新增“测试连接”功能，方便实时校验账号有效性及实例识别情况。
+
 [v1.1.0] - 2025-12-29
 
 Fixed (修复)
