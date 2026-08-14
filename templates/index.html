@@ -3,50 +3,56 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Netcup Monitor Pro</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <title>Netcup Monitor Pro - 智能流控与监控大屏</title>
     <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        :root { --bg-body: #f4f6f9; --bg-card: #ffffff; --text-primary: #1f2937; --text-secondary: #6b7280; --border-color: #e5e7eb; --accent-brand: #0d6efd; }
-        body { background-color: var(--bg-body); color: var(--text-primary); font-family: 'Inter', sans-serif; padding-bottom: 60px; }
-        .dashboard-container { max-width: 1400px; margin: 0 auto; padding: 2rem 1rem; }
-        
-        .dashboard-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 3rem; flex-wrap: wrap; gap: 1rem; }
-        
-        .white-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); margin-bottom: 1.5rem; }
-        .card-header-custom { padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
-        .card-title { font-weight: 700; font-size: 1.1rem; margin: 0; }
-        
-        .status-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
-        .stat-box { 
-            background: #fff; padding: 1rem 1.2rem; border-radius: 10px; border: 1px solid var(--border-color); 
-            cursor: pointer; position: relative; overflow: hidden; transition: all 0.2s ease;
+        :root {
+            --bg-body: #f4f6f9;
+            --surface: #ffffff;
+            --text-main: #1f2937;
+            --text-secondary: #6b7280;
+            --accent-brand: #0d6efd;
+            --border-color: #e5e7eb;
         }
-        .stat-box:hover { transform: translateY(-2px); box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-        .stat-box.active { border-color: var(--accent-brand); background-color: #eff6ff; box-shadow: 0 0 0 1px var(--accent-brand) inset; }
-        .stat-num { font-size: 1.8rem; font-weight: 700; line-height: 1.1; margin-bottom: 0.1rem; }
-        .stat-label { font-size: 0.75rem; color: var(--text-secondary); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+        body { background-color: var(--bg-body); color: var(--text-main); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
+        .dashboard-container { max-width: 1300px; margin: 0 auto; padding: 2rem 1.5rem; }
+        .dashboard-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
+        .dashboard-title { font-size: 1.5rem; font-weight: 700; display: flex; align-items: center; gap: 0.5rem; }
+        
+        .status-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.25rem; margin-bottom: 2rem; }
+        .stat-box { background: var(--surface); padding: 1.25rem 1.5rem; border-radius: 12px; border: 1px solid var(--border-color); cursor: pointer; transition: all 0.2s ease; box-shadow: 0 1px 3px rgba(0,0,0,0.02); }
+        .stat-box:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        .stat-box.active { border-color: var(--accent-brand); background-color: #f8faff; }
+        .stat-num { font-size: 1.8rem; font-weight: 700; line-height: 1.2; }
+        .stat-label { font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.25rem; }
 
-        .nav-pills-custom { gap: 10px; margin-bottom: 1.5rem; flex-wrap: wrap; justify-content: center; }
-        .nav-pills-custom .nav-link { background: #fff; border: 1px solid var(--border-color); color: var(--text-secondary); font-weight: 500; border-radius: 8px; white-space: nowrap; }
-        .nav-pills-custom .nav-link.active { background: var(--accent-brand); color: #fff; border-color: var(--accent-brand); }
+        .nav-pills-custom { background: var(--surface); padding: 6px; border-radius: 10px; border: 1px solid var(--border-color); display: inline-flex; }
+        .nav-pills-custom .nav-link { color: var(--text-secondary); border-radius: 6px; padding: 0.5rem 1.2rem; font-weight: 500; font-size: 0.9rem; border: none; }
+        .nav-pills-custom .nav-link.active { background-color: var(--accent-brand); color: #fff; box-shadow: 0 2px 4px rgba(13,110,253,0.2); }
+
+        .white-card { background: var(--surface); border-radius: 12px; border: 1px solid var(--border-color); box-shadow: 0 1px 3px rgba(0,0,0,0.02); margin-bottom: 2rem; overflow: hidden; }
+        .card-header-custom { padding: 1rem 1.5rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
+        .card-title { font-size: 1.05rem; font-weight: 600; margin: 0; }
         
         .table-custom { width: 100%; border-collapse: separate; border-spacing: 0; }
-        .table-custom th { text-align: left; padding: 1rem 1.5rem; background: #f9fafb; color: var(--text-secondary); font-size: 0.8rem; font-weight: 600; text-transform: uppercase; border-bottom: 1px solid var(--border-color); cursor: pointer; user-select: none; white-space: nowrap; }
-        .table-custom th:hover { background: #f3f4f6; color: var(--text-primary); }
-        .table-custom td { padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border-color); vertical-align: middle; font-size: 0.95rem; white-space: nowrap; }
+        .table-custom th { background: #f9fafb; padding: 1rem 1.25rem; font-size: 0.8rem; font-weight: 600; text-transform: uppercase; color: var(--text-secondary); border-bottom: 1px solid var(--border-color); cursor: pointer; user-select: none; }
+        .table-custom td { padding: 1rem 1.25rem; border-bottom: 1px solid var(--border-color); font-size: 0.9rem; vertical-align: middle; }
+        .table-custom tr:last-child td { border-bottom: none; }
         
-        .font-mono { font-family: 'JetBrains Mono', monospace; }
-        .metric-main { font-weight: 700; font-size: 1.05rem; }
-        .metric-sub { font-size: 0.8rem; color: var(--text-secondary); display: block; margin-top: 2px; }
-        .badge-status { padding: 5px 12px; border-radius: 6px; font-size: 0.8rem; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; }
-        .bg-success-subtle { background: #e8f5e9; color: #1b5e20; }
-        .bg-danger-subtle { background: #ffebee; color: #c62828; }
-        .bg-gray-subtle { background: #f3f4f6; color: #4b5563; }
-        .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
-        .form-control { border-radius: 8px; padding: 0.5rem 0.8rem; font-size: 0.9rem; }
+        .badge-status { font-size: 0.75rem; padding: 0.35rem 0.65rem; border-radius: 50px; font-weight: 600; display: inline-flex; align-items: center; gap: 0.35rem; }
+        .badge-status .dot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; }
+        .bg-success-subtle { background-color: #def7ec; color: #03543f; }
+        .bg-success-subtle .dot { background-color: #0e9f6e; }
+        .bg-danger-subtle { background-color: #fde8e8; color: #9b1c1c; }
+        .bg-danger-subtle .dot { background-color: #e02424; }
+        .bg-gray-subtle { background-color: #f3f4f6; color: #374151; }
+        .bg-gray-subtle .dot { background-color: #9ca3af; }
+
+        .metric-main { font-weight: 600; font-size: 0.95rem; }
+        .metric-sub { font-size: 0.75rem; color: var(--text-secondary); margin-top: 2px; }
+        .font-mono { font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace; }
         .form-hint { font-size: 0.75rem; color: var(--text-secondary); margin-top: 4px; }
         .w-compact { max-width: 200px; }
         .w-medium { max-width: 350px; }
@@ -63,10 +69,10 @@
         
         @media (min-width: 769px) {
             .cfg-name { width: 25%; }
-            .cfg-ip { width: 30%; }
-            .cfg-id { width: 30%; }
-            .cfg-mode { width: 10%; }
-            .cfg-action { width: 5%; text-align: right; }
+            .cfg-ip { width: 28%; }
+            .cfg-id { width: 25%; }
+            .cfg-mode { width: 12%; }
+            .cfg-action { width: 10%; text-align: right; }
             .cfg-soap-id { width: 45%; }
             .cfg-soap-pass { width: 45%; }
             .cfg-soap-action { width: 10%; text-align: right; }
@@ -75,10 +81,11 @@
         @media (max-width: 768px) {
             .dashboard-container { padding: 1rem 0.5rem; }
             .dashboard-header { flex-direction: column; text-align: center; gap: 1.5rem; margin-bottom: 2rem; }
-            .dashboard-header .d-flex.gap-2 { width: 100%; justify-content: center; }
+            .dashboard-header .d-flex.gap-2 { width: 100%; justify-content: center; flex-wrap: wrap; }
             .status-grid { grid-template-columns: 1fr 1fr; gap: 0.8rem; }
             .stat-box { padding: 1rem; }
             .stat-num { font-size: 1.5rem; }
+            .nav-pills-custom { flex-wrap: wrap; justify-content: center; }
             .nav-pills-custom .nav-link { font-size: 0.85rem; padding: 0.4rem 0.8rem; }
             .config-header { display: none; }
             .config-row { flex-direction: column; align-items: stretch; gap: 10px; padding: 15px; border-bottom: 8px solid #f4f6f9; }
@@ -108,29 +115,33 @@
         <div class="mb-4"><i class="bi bi-shield-lock text-primary" style="font-size: 3rem;"></i></div>
         <h4 class="fw-bold mb-2">需要管理员权限</h4>
         <input type="password" id="loginPass" class="form-control text-center mb-3" placeholder="输入管理员密码" onkeypress="if(event.key==='Enter') doLogin()">
-        <button class="btn btn-primary w-100 py-2 rounded-3 fw-bold" onclick="doLogin()">解锁进入</button>
+        <button class="btn btn-primary w-100 py-2" onclick="doLogin()">确认登录</button>
+        <button class="btn btn-link w-100 mt-2 text-secondary text-decoration-none" onclick="document.getElementById('loginOverlay').classList.remove('active')">取消</button>
     </div>
 </div>
 
 <div class="dashboard-container">
     <div class="dashboard-header">
         <div>
-            <div class="d-flex align-items-center justify-content-center justify-content-md-start gap-3">
-                <h3 class="fw-bold m-0" style="letter-spacing: -0.5px;">Netcup Monitor <span class="text-primary">Pro</span></h3>
+            <div class="dashboard-title">
+                <i class="bi bi-speedometer2 text-primary"></i> Netcup Monitor Pro
+                <span class="badge bg-primary-subtle text-primary border border-primary-subtle fs-6 fw-normal px-2 ms-2">v1.2.0</span>
             </div>
             <div class="text-secondary small mt-1">
-                <i class="bi bi-clock me-1"></i> <span id="lastUpdated">正在获取数据...</span>
-                <span class="ms-2 opacity-50">|</span> <span class="ms-2">By 懒羊羊</span>
+                最近巡检: <span id="lastUpdated" class="font-mono text-dark fw-bold">-</span>
             </div>
         </div>
+        
         <div class="d-flex gap-2">
+            <button class="btn btn-light border btn-sm shadow-sm" id="btnToggleIP" onclick="toggleIPs()"><i class="bi bi-eye"></i> IP</button>
             <div id="adminControls" class="d-none d-flex gap-2">
-                <button class="btn btn-white border" id="btnToggleIP" onclick="toggleIPs()"><i class="bi bi-eye"></i> IP</button>
-                <button class="btn btn-white border" onclick="triggerRun()"><i class="bi bi-arrow-repeat"></i> 刷新</button>
-                <button class="btn btn-primary" onclick="saveConfig()"><i class="bi bi-save"></i> 保存</button>
-                <button class="btn btn-danger" onclick="doLogout()"><i class="bi bi-box-arrow-right"></i></button>
+                <button class="btn btn-light border btn-sm shadow-sm" onclick="triggerRun()"><i class="bi bi-arrow-repeat"></i> 立即巡检</button>
+                <button class="btn btn-primary btn-sm shadow-sm" onclick="saveConfig()"><i class="bi bi-floppy"></i> 保存设置</button>
+                <button class="btn btn-outline-danger btn-sm" onclick="doLogout()"><i class="bi bi-box-arrow-right"></i></button>
             </div>
-            <div id="guestControls"><button class="btn btn-dark" onclick="openLogin()"><i class="bi bi-person-lock me-2"></i>登录</button></div>
+            <div id="guestControls">
+                <button class="btn btn-primary btn-sm shadow-sm" onclick="openLogin()"><i class="bi bi-lock-fill"></i> 管理员登录</button>
+            </div>
         </div>
     </div>
 
@@ -139,7 +150,7 @@
     <div class="d-flex justify-content-center mb-4">
         <ul class="nav nav-pills-custom">
             <li class="nav-item"><button class="nav-link active" onclick="switchTab('health')"><i class="bi bi-heart-pulse me-2"></i>体质分析</button></li>
-            <li class="nav-item"><button class="nav-link" onclick="switchTab('traffic')"><i class="bi bi-bar-chart me-2"></i>流量统计</button></li>
+            <li class="nav-item"><button class="nav-link" onclick="switchTab('traffic')"><i class="bi bi-bar-chart me-2"></i>双轨流量</button></li>
             <li class="nav-item protected-tab d-none"><button class="nav-link" onclick="switchTab('servers')"><i class="bi bi-hdd-rack me-2"></i>实例配置</button></li>
             <li class="nav-item protected-tab d-none"><button class="nav-link" onclick="switchTab('global')"><i class="bi bi-sliders me-2"></i>全局设置</button></li>
             <li class="nav-item protected-tab d-none"><button class="nav-link" onclick="switchTab('accounts')"><i class="bi bi-person-badge me-2"></i>SCP账号</button></li>
@@ -148,9 +159,10 @@
     </div>
 
     <div id="tab-content-area">
+        <!-- 体质健康 Tab -->
         <div id="view-health" class="tab-view">
             <div class="white-card">
-                <div class="card-header-custom"><div class="card-title">实例健康报告</div></div>
+                <div class="card-header-custom"><div class="card-title">实例健康状态分析</div></div>
                 <div class="table-responsive">
                     <table class="table-custom" id="healthTable">
                         <thead>
@@ -171,19 +183,23 @@
             </div>
         </div>
 
+        <!-- 流量中心 Tab (双轨流量) -->
         <div id="view-traffic" class="tab-view d-none">
             <div class="white-card">
-                <div class="card-header-custom"><div class="card-title">流量统计中心</div></div>
+                <div class="card-header-custom">
+                    <div class="card-title">双轨流量统计中心 (Netcup 官方计费 vs qB PT 流量)</div>
+                </div>
                 <div class="table-responsive">
                     <table class="table-custom" id="trafficTable">
                         <thead>
                             <tr>
                                 <th onclick="sortTable('trafficTable', 0)">服务器名称</th>
                                 <th onclick="sortTable('trafficTable', 1)">状态</th>
-                                <th onclick="sortTable('trafficTable', 2, 'data-val')">QB当前总量</th>
-                                <th onclick="sortTable('trafficTable', 3, 'data-val')">今日流量</th>
-                                <th onclick="sortTable('trafficTable', 4, 'data-val')">本月流量</th>
-                                <th onclick="sortTable('trafficTable', 5, 'data-val')">日均流量</th>
+                                <th onclick="sortTable('trafficTable', 2, 'data-val')">Netcup官方本月流量</th>
+                                <th onclick="sortTable('trafficTable', 3, 'data-val')">qB本月PT流量</th>
+                                <th onclick="sortTable('trafficTable', 4, 'data-val')">qB今日流量</th>
+                                <th onclick="sortTable('trafficTable', 5, 'data-val')">qB日均流量</th>
+                                <th onclick="sortTable('trafficTable', 6, 'data-val')">qB当前总量</th>
                             </tr>
                         </thead>
                         <tbody></tbody>
@@ -195,27 +211,32 @@
             </div>
         </div>
 
+        <!-- 实例配置 Tab -->
         <div id="view-servers" class="tab-view d-none">
             <div class="white-card">
                 <div class="card-header-custom">
-                    <div class="card-title">实例配置</div>
-                    <button class="btn btn-sm btn-primary" onclick="addServerRow()"><i class="bi bi-plus-lg"></i> 添加</button>
+                    <div class="card-title">监控实例配置</div>
+                    <div>
+                        <button class="btn btn-sm btn-outline-primary me-2" onclick="testQbAll()"><i class="bi bi-hdd-network"></i> 测试所有 qB</button>
+                        <button class="btn btn-sm btn-primary" onclick="addServerRow()"><i class="bi bi-plus-lg"></i> 添加实例</button>
+                    </div>
                 </div>
                 <div class="config-header">
                     <div class="cfg-name">名称</div>
                     <div class="cfg-ip">IP地址</div>
-                    <div class="cfg-id">Client ID</div>
-                    <div class="cfg-mode">模式</div>
-                    <div class="cfg-action"></div>
+                    <div class="cfg-id">Client ID (Vertex)</div>
+                    <div class="cfg-mode">流控模式</div>
+                    <div class="cfg-action">操作</div>
                 </div>
                 <div id="serverContainer"></div>
                 <div class="p-3 bg-light border-top text-secondary small">
-                    <div class="mb-1"><i class="bi bi-info-circle me-1"></i> <strong>Client ID：</strong> 请填写在Vertex下载器界面的信息。</div>
-                    <div><i class="bi bi-toggle-on me-1"></i> <strong>关于“不托管”：</strong> 开启后，脚本只会记录该实例的流量和限速状态，<strong>不会</strong>对QB里的种子进行删除或暂停操作，也<strong>不会</strong>参与Vertex的任何联动。</div>
+                    <div class="mb-1"><i class="bi bi-info-circle me-1"></i> <strong>Client ID：</strong> 请填写在 Vertex 下载器设置中的 Client ID。</div>
+                    <div><i class="bi bi-toggle-on me-1"></i> <strong>关于“不托管”：</strong> 开启后，脚本仅记录流量与限速状态，<strong>不会</strong>对 qB 种子执行暂停、限速或删除操作。</div>
                 </div>
             </div>
         </div>
 
+        <!-- 全局设置 Tab -->
         <div id="view-global" class="tab-view d-none">
             <div class="white-card p-4">
                 <div class="row g-5">
@@ -230,14 +251,14 @@
                             <div class="col-sm-9"><input id="qb_pass" type="password" class="form-control w-medium"></div>
                         </div>
                         <div class="mb-3 row align-items-center">
-                            <label class="col-sm-3 col-form-label">端口</label>
+                            <label class="col-sm-3 col-form-label">默认端口</label>
                             <div class="col-sm-9"><input id="qb_port" type="number" class="form-control w-compact" placeholder="8080"></div>
                         </div>
                     </div>
                     <div class="col-md-6">
                         <h5 class="fw-bold mb-3 border-bottom pb-2">Vertex 联动配置</h5>
                         <div class="mb-3 row align-items-center">
-                            <label class="col-sm-3 col-form-label">地址</label>
+                            <label class="col-sm-3 col-form-label">API 地址</label>
                             <div class="col-sm-9"><input id="vt_url" class="form-control w-medium" placeholder="http://192.168.1.2:3000"></div>
                         </div>
                         <div class="mb-3 row align-items-center">
@@ -252,14 +273,14 @@
                             <label class="col-sm-3 col-form-label">容器名</label>
                             <div class="col-sm-9">
                                 <input id="vt_container" class="form-control w-compact" placeholder="vertex">
-                                <div class="form-hint">用于自动重启 Vertex (本地部署时)</div>
+                                <div class="form-hint">用于自动重启 Vertex (同机部署时)</div>
                             </div>
                         </div>
                         <div class="mb-3 row align-items-center">
                             <label class="col-sm-3 col-form-label">监控 RSS ID</label>
                             <div class="col-sm-9">
-                                <input id="rss_ids" class="form-control" placeholder="4c145005, c0bf7481 (支持中英文逗号)">
-                                <div class="form-hint">自动从 Vertex 获取并更新规则，无需挂载文件</div>
+                                <input id="rss_ids" class="form-control" placeholder="4c145005, c0bf7481 (逗号分隔)">
+                                <div class="form-hint">自动根据限速状态更新分配的下载器</div>
                             </div>
                         </div>
                     </div>
@@ -269,25 +290,25 @@
                                 <h5 class="fw-bold mb-3 border-bottom pb-2">策略管理</h5>
                                 <div class="mb-3">
                                     <label class="form-label">保留分类 (Keep Categories)</label>
-                                    <input id="keep_cats" class="form-control" placeholder="keep">
-                                    <div class="form-hint">被限速时，这些分类暂停，其他删除</div>
+                                    <input id="keep_cats" class="form-control" placeholder="keep, manual">
+                                    <div class="form-hint">限速时仅暂停，恢复后自动重新启动</div>
                                 </div>
                                 
                                 <div class="mb-3 bg-light p-3 rounded border">
-                                    <label class="form-label fw-bold text-primary"><i class="bi bi-shield-check me-1"></i> HR 保护策略</label>
+                                    <label class="form-label fw-bold text-primary"><i class="bi bi-shield-check me-1"></i> HR 智能保护策略</label>
                                     <div class="mb-2">
-                                        <label class="small text-secondary">受保护分类 (支持中英文逗号)</label>
+                                        <label class="small text-secondary">受保护分类 (逗号分隔)</label>
                                         <input id="hr_cats" class="form-control form-control-sm" placeholder="HR, VIP">
                                     </div>
                                     <div>
-                                        <label class="small text-secondary">限速上传限制 (KB/s)</label>
+                                        <label class="small text-secondary">限速做种上传速率 (KB/s)</label>
                                         <input id="hr_limit" type="number" class="form-control form-control-sm w-compact" value="10">
                                     </div>
-                                    <div class="form-hint mt-2">限速时: <strong>做种中</strong>种子限制上传速度，<strong>下载中</strong>种子暂停下载。</div>
+                                    <div class="form-hint mt-2">限速时: <strong>做种中</strong>种子保种限速，<strong>下载中</strong>种子暂停下载防偷跑。</div>
                                 </div>
                             </div>
                             <div class="col-md-6">
-                                <h5 class="fw-bold mb-3 border-bottom pb-2">通知与安全</h5>
+                                <h5 class="fw-bold mb-3 border-bottom pb-2">告警通知与安全</h5>
                                 <div class="mb-3">
                                     <label class="form-label">通知方式</label>
                                     <select id="notify_mode" class="form-select w-medium" onchange="toggleNotifyFields()">
@@ -298,6 +319,18 @@
                                     </select>
                                 </div>
                                 
+                                <div class="mb-3">
+                                    <label class="form-label small">日常健康简报周期</label>
+                                    <select id="report_interval" class="form-select w-compact">
+                                        <option value="1">每 1 小时</option>
+                                        <option value="3">每 3 小时</option>
+                                        <option value="6" selected>每 6 小时</option>
+                                        <option value="12">每 12 小时</option>
+                                        <option value="24">每 24 小时 (每日)</option>
+                                    </select>
+                                    <div class="form-hint">限速触发/恢复等突发事件将<strong>秒级即时推送</strong>，不受此周期限制。</div>
+                                </div>
+
                                 <div id="tg_fields">
                                     <div class="mb-3 row">
                                         <div class="col-6">
@@ -314,7 +347,7 @@
                                 <div id="wx_fields" class="d-none">
                                     <div class="mb-3">
                                         <label class="form-label small">Webhook Key</label>
-                                        <input id="wx_key" class="form-control form-control-sm" placeholder="例如: 693a91f6-7xxx-4xxx-xxxx-xxxxxxxxxxxx">
+                                        <input id="wx_key" class="form-control form-control-sm" placeholder="693a91f6-xxxx-xxxx-xxxx-xxxxxxxxxxxx">
                                     </div>
                                 </div>
 
@@ -335,6 +368,10 @@
                                     </div>
                                 </div>
 
+                                <div class="mb-3">
+                                    <button class="btn btn-sm btn-outline-secondary" onclick="testNotification()"><i class="bi bi-send-check"></i> 发送测试通知</button>
+                                </div>
+
                                 <div class="mb-3 mt-4">
                                     <label class="form-label text-danger">修改管理员密码</label>
                                     <input id="admin_pass" type="password" class="form-control w-medium" placeholder="留空则不修改">
@@ -346,27 +383,29 @@
             </div>
         </div>
 
+        <!-- SCP 账号 Tab -->
         <div id="view-accounts" class="tab-view d-none">
              <div class="white-card">
                 <div class="card-header-custom">
                     <div class="card-title">Netcup SCP 账号 (REST API)</div>
                     <div>
                         <button class="btn btn-sm btn-outline-primary me-2" onclick="testScpConnection()"><i class="bi bi-patch-check"></i> 测试连接</button>
-                        <button class="btn btn-sm btn-primary" onclick="addSoapRow()"><i class="bi bi-plus-lg"></i> 添加</button>
+                        <button class="btn btn-sm btn-primary" onclick="addSoapRow()"><i class="bi bi-plus-lg"></i> 添加账号</button>
                     </div>
                 </div>
                 <div class="config-header">
                     <div class="cfg-soap-id">客户号 (Customer ID)</div>
                     <div class="cfg-soap-pass">SCP 密码</div>
-                    <div class="cfg-soap-action"></div>
+                    <div class="cfg-soap-action">操作</div>
                 </div>
                 <div id="soapContainer"></div>
                 <div class="mt-3 p-3 bg-light rounded small text-secondary">
-                    <i class="bi bi-info-circle me-1"></i> Netcup 现已切换至全新 SCP REST API。输入您的 Netcup 客户号（如 <code>123456</code>）与 SCP 登录密码即可自动完成 Keycloak 认证与状态同步。
+                    <i class="bi bi-info-circle me-1"></i> Netcup 已切换至全新 SCP REST API。输入您的 Netcup 客户号（如 <code>123456</code>）与 SCP 登录密码即可自动完成 Keycloak 认证与状态同步。
                 </div>
             </div>
         </div>
 
+        <!-- 运行日志 Tab -->
         <div id="view-logs" class="tab-view d-none">
              <div class="white-card">
                 <div class="card-header-custom">
@@ -442,7 +481,6 @@
         });
     }
 
-    // === 图表逻辑 ===
     function initCharts() {
         const commonOptions = {
             responsive: true,
@@ -498,8 +536,28 @@
             let badge = `<span class="badge-status ${cls}"><span class="dot"></span>${txt}</span>`;
             let nameCol = `<div class="fw-bold text-dark">${s.name}</div>${(isLoggedIn && showIPs && s.ip)?`<div class="small text-secondary font-mono">${s.ip}</div>`:''}`;
 
-            tBody.innerHTML += `<tr><td>${nameCol}</td><td>${badge}</td><td data-val="${(s.traffic.qb_current_up||0)+(s.traffic.qb_current_dl||0)}">${gc(s.traffic.qb_current_up||0, s.traffic.qb_current_dl||0)}</td><td data-val="${s.traffic.up_today+s.traffic.dl_today}">${gc(s.traffic.up_today, s.traffic.dl_today)}</td><td data-val="${s.traffic.up_month+s.traffic.dl_month}">${gc(s.traffic.up_month, s.traffic.dl_month)}</td><td data-val="${s.traffic.up_daily_avg+s.traffic.dl_daily_avg}">${gc(s.traffic.up_daily_avg, s.traffic.dl_daily_avg)}</td></tr>`;
-            hBody.innerHTML += `<tr><td>${nameCol}</td><td>${badge}</td><td data-val="${s.health.current_duration}"><span class="metric-main font-mono fw-bold">${fmtDur(s.health.current_duration)}</span></td><td data-val="${s.health.today_throttled}" class="${s.health.today_throttled>0?'text-danger fw-bold':''} font-mono">${fmtDur(s.health.today_throttled)}</td><td data-val="${s.health.avg_daily_throttled}" class="text-secondary font-mono">${fmtDur(s.health.avg_daily_throttled)}</td></tr>`;
+            let ncTotalGb = s.traffic.netcup_total_month_gb || 0;
+            let ncRxMib = s.traffic.netcup_rx_month_mib || 0;
+            let ncTxMib = s.traffic.netcup_tx_month_mib || 0;
+            let ncCol = `<div class="metric-main font-mono text-primary">${(ncTotalGb >= 1024 ? (ncTotalGb/1024).toFixed(2)+' TB' : ncTotalGb.toFixed(2)+' GB')}</div><div class="metric-sub font-mono"><span class="text-success">↑${(ncTxMib/1024).toFixed(1)}G</span> <span class="text-primary ms-2">↓${(ncRxMib/1024).toFixed(1)}G</span></div>`;
+
+            tBody.innerHTML += `<tr>
+                <td>${nameCol}</td>
+                <td>${badge}</td>
+                <td data-val="${ncTotalGb}">${ncCol}</td>
+                <td data-val="${s.traffic.up_month+s.traffic.dl_month}">${gc(s.traffic.up_month, s.traffic.dl_month)}</td>
+                <td data-val="${s.traffic.up_today+s.traffic.dl_today}">${gc(s.traffic.up_today, s.traffic.dl_today)}</td>
+                <td data-val="${s.traffic.up_daily_avg+s.traffic.dl_daily_avg}">${gc(s.traffic.up_daily_avg, s.traffic.dl_daily_avg)}</td>
+                <td data-val="${(s.traffic.qb_current_up||0)+(s.traffic.qb_current_dl||0)}">${gc(s.traffic.qb_current_up||0, s.traffic.qb_current_dl||0)}</td>
+            </tr>`;
+            
+            hBody.innerHTML += `<tr>
+                <td>${nameCol}</td>
+                <td>${badge}</td>
+                <td data-val="${s.health.current_duration}"><span class="metric-main font-mono fw-bold">${fmtDur(s.health.current_duration)}</span></td>
+                <td data-val="${s.health.today_throttled}" class="${s.health.today_throttled>0?'text-danger fw-bold':''} font-mono">${fmtDur(s.health.today_throttled)}</td>
+                <td data-val="${s.health.avg_daily_throttled}" class="text-secondary font-mono">${fmtDur(s.health.avg_daily_throttled)}</td>
+            </tr>`;
         });
     }
     
@@ -521,31 +579,65 @@
         document.getElementById('keep_cats').value = (config.keep_categories||[]).join(','); 
         document.getElementById('hr_cats').value = (config.hr_config?.categories || []).join(','); document.getElementById('hr_limit').value = config.hr_config?.upload_limit_kb || 10;
         document.getElementById('notify_mode').value = config.notify_mode || 'telegram'; toggleNotifyFields();
+        document.getElementById('report_interval').value = config.report_interval_hours || 6;
         document.getElementById('tg_token').value = config.telegram_config?.bot_token||''; document.getElementById('tg_chat').value = config.telegram_config?.chat_id||'';
         document.getElementById('wx_key').value = config.wechat_config?.key || '';
         document.getElementById('wx_app_corpid').value = config.wechat_app_config?.corpid || ''; document.getElementById('wx_app_agentid').value = config.wechat_app_config?.agentid || ''; document.getElementById('wx_app_secret').value = config.wechat_app_config?.secret || '';
 
         const sc = document.getElementById('serverContainer'); sc.innerHTML='';
         (config.servers||[]).forEach((s,i) => {
-            sc.innerHTML += `<div class="config-row"><div class="cfg-name"><input class="form-control form-control-sm" placeholder="名称" value="${s.name}" onchange="updateArr('servers',${i},'name',this.value)"></div><div class="cfg-ip"><input class="form-control form-control-sm font-mono" placeholder="IP" value="${s.ip}" onchange="updateArr('servers',${i},'ip',this.value)"></div><div class="cfg-id"><input class="form-control form-control-sm font-mono" placeholder="Client ID" value="${s.client_id||''}" onchange="updateArr('servers',${i},'client_id',this.value)"></div><div class="cfg-mode"><div class="form-check form-switch d-flex align-items-center justify-content-between w-100"><label class="small text-secondary me-2">不托管</label><input class="form-check-input" type="checkbox" ${s.unmanaged?'checked':''} onchange="updateArr('servers',${i},'unmanaged',this.checked)"></div></div><div class="cfg-action"><button class="btn btn-sm btn-light text-danger border-0" onclick="removeArr('servers',${i})"><i class="bi bi-trash-fill"></i></button></div></div>`;
+            sc.innerHTML += `<div class="config-row">
+                <div class="cfg-name"><input class="form-control form-control-sm" placeholder="名称" value="${s.name}" onchange="updateArr('servers',${i},'name',this.value)"></div>
+                <div class="cfg-ip"><input class="form-control form-control-sm font-mono" placeholder="IP" value="${s.ip}" onchange="updateArr('servers',${i},'ip',this.value)"></div>
+                <div class="cfg-id"><input class="form-control form-control-sm font-mono" placeholder="Client ID" value="${s.client_id||''}" onchange="updateArr('servers',${i},'client_id',this.value)"></div>
+                <div class="cfg-mode"><div class="form-check form-switch d-flex align-items-center justify-content-between w-100"><label class="small text-secondary me-2">不托管</label><input class="form-check-input" type="checkbox" ${s.unmanaged?'checked':''} onchange="updateArr('servers',${i},'unmanaged',this.checked)"></div></div>
+                <div class="cfg-action d-flex gap-1 justify-content-end">
+                    <button class="btn btn-sm btn-light text-primary border-0" title="测试此 qB" onclick="testQbSingle('${s.ip}')"><i class="bi bi-hdd-network"></i></button>
+                    <button class="btn btn-sm btn-light text-danger border-0" title="删除" onclick="removeArr('servers',${i})"><i class="bi bi-trash-fill"></i></button>
+                </div>
+            </div>`;
         });
         const ac = document.getElementById('soapContainer'); ac.innerHTML='';
-        (config.soap_config?.accounts||[]).forEach((a,i) => {
-            ac.innerHTML += `<div class="config-row"><div class="cfg-soap-id"><input class="form-control form-control-sm font-mono" placeholder="Customer ID" value="${a.customer_number}" onchange="updateArr('accounts',${i},'customer_number',this.value)"></div><div class="cfg-soap-pass"><input class="form-control form-control-sm font-mono" type="password" placeholder="SCP 密码" value="${a.password}" onchange="updateArr('accounts',${i},'password',this.value)"></div><div class="cfg-soap-action"><button class="btn btn-sm btn-light text-danger border-0" onclick="removeArr('accounts',${i})"><i class="bi bi-trash-fill"></i></button></div></div>`;
+        (config.soap_config?.accounts || config.scp_config?.accounts || []).forEach((a,i) => {
+            ac.innerHTML += `<div class="config-row">
+                <div class="cfg-soap-id"><input class="form-control form-control-sm font-mono" placeholder="Customer ID" value="${a.customer_number || a.username || ''}" onchange="updateArr('accounts',${i},'customer_number',this.value)"></div>
+                <div class="cfg-soap-pass"><input class="form-control form-control-sm font-mono" type="password" placeholder="SCP 密码" value="${a.password || ''}" onchange="updateArr('accounts',${i},'password',this.value)"></div>
+                <div class="cfg-soap-action"><button class="btn btn-sm btn-light text-danger border-0" onclick="removeArr('accounts',${i})"><i class="bi bi-trash-fill"></i></button></div>
+            </div>`;
         });
     }
-    function updateArr(t,i,k,v){if(t==='servers')config.servers[i][k]=v;else config.soap_config.accounts[i][k]=v;}
-    function removeArr(t,i){if(t==='servers')config.servers.splice(i,1);else config.soap_config.accounts.splice(i,1);renderForms();}
+    function updateArr(t,i,k,v){
+        if(t==='servers') {
+            config.servers[i][k]=v;
+        } else {
+            if (!config.scp_config) config.scp_config = config.soap_config || { accounts: [] };
+            if (!config.scp_config.accounts) config.scp_config.accounts = [];
+            config.scp_config.accounts[i][k]=v;
+            config.soap_config = config.scp_config;
+        }
+    }
+    function removeArr(t,i){
+        if(t==='servers') config.servers.splice(i,1);
+        else {
+            if (config.scp_config?.accounts) config.scp_config.accounts.splice(i,1);
+            if (config.soap_config?.accounts) config.soap_config.accounts.splice(i,1);
+        }
+        renderForms();
+    }
     function addServerRow(){if(!config.servers)config.servers=[];config.servers.push({name:'New',ip:'',client_id:'',unmanaged:false});renderForms();}
-    function addSoapRow(){if(!config.soap_config)config.soap_config={};if(!config.soap_config.accounts)config.soap_config.accounts=[];config.soap_config.accounts.push({customer_number:'',password:''});renderForms();}
+    function addSoapRow(){
+        if(!config.scp_config) config.scp_config = { accounts: [] };
+        if(!config.scp_config.accounts) config.scp_config.accounts = [];
+        config.scp_config.accounts.push({customer_number:'', password:''});
+        config.soap_config = config.scp_config;
+        renderForms();
+    }
     
     function saveConfig() {
         if(!isLoggedIn)return; 
-        
-        // 辅助函数：处理中英文逗号分割
         const cleanSplit = (str) => str.replace(/，/g, ',').split(',').map(s=>s.trim()).filter(x=>x);
 
-        config.qb_config={user:document.getElementById('qb_user').value,password:document.getElementById('qb_pass').value,port:parseInt(document.getElementById('qb_port').value)};
+        config.qb_config={user:document.getElementById('qb_user').value,password:document.getElementById('qb_pass').value,port:parseInt(document.getElementById('qb_port').value) || 8080};
         config.vertex_config={api_url:document.getElementById('vt_url').value,api_user:document.getElementById('vt_user').value,api_password:document.getElementById('vt_pass').value,container_name:document.getElementById('vt_container').value};
         delete config.rss_dir; 
         
@@ -557,19 +649,16 @@
         };
         
         config.notify_mode = document.getElementById('notify_mode').value;
+        config.report_interval_hours = parseInt(document.getElementById('report_interval').value) || 6;
         config.telegram_config={bot_token:document.getElementById('tg_token').value,chat_id:document.getElementById('tg_chat').value};
         config.wechat_config = { key: document.getElementById('wx_key').value };
         config.wechat_app_config = { corpid: document.getElementById('wx_app_corpid').value, agentid: document.getElementById('wx_app_agentid').value, secret: document.getElementById('wx_app_secret').value };
 
-        // 移除 wsdl_url 字段，确保后端使用默认值
-        if(config.soap_config && config.soap_config.wsdl_url) {
-            delete config.soap_config.wsdl_url;
-        }
-
         const np=document.getElementById('admin_pass').value; if(np)config.admin_password=np;
         fetch('/api/config',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(config)}).then(r=>r.json()).then(res=>showToast(res.status==='success'?'配置已保存':'保存失败',res.status==='success'?'success':'error'));
     }
-    function triggerRun() { fetch('/api/run_now', {method:'POST'}).then(()=>showToast('已触发刷新')); }
+    
+    function triggerRun() { fetch('/api/run_now', {method:'POST'}).then(()=>showToast('已触发后台巡检')); }
     
     function testScpConnection() {
         if(!isLoggedIn) return;
@@ -579,25 +668,55 @@
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify(config)
         }).then(r => r.json()).then(res => {
-            if (res.status === 'success') {
-                let msg = res.message || '连接成功';
-                if (res.details && res.details.length > 0) {
-                    msg += '\n\n' + res.details.join('\n');
-                }
-                alert(msg);
-                showToast('SCP 连接测试成功', 'success');
-            } else {
-                let msg = '测试失败: ' + (res.message || '未知错误');
-                if (res.details && res.details.length > 0) {
-                    msg += '\n\n' + res.details.join('\n');
-                }
-                alert(msg);
-                showToast('SCP 连接测试失败', 'error');
+            let msg = res.message || '连接测试完成';
+            if (res.details && res.details.length > 0) {
+                msg += '\n\n' + res.details.join('\n');
             }
+            alert(msg);
+            showToast(res.status === 'success' ? 'SCP 连接测试成功' : 'SCP 连接测试失败', res.status === 'success' ? 'success' : 'error');
         }).catch(err => {
             alert('请求异常: ' + err);
             showToast('请求异常', 'error');
         });
+    }
+
+    function testQbAll() {
+        if(!isLoggedIn) return;
+        showToast('正在测试所有 qBittorrent 连通性...', 'info');
+        fetch('/api/test_qb', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(config)
+        }).then(r => r.json()).then(res => {
+            let msg = res.details ? res.details.join('\n') : res.message;
+            alert(msg);
+            showToast(res.status === 'success' ? 'qB 连接全部正常' : '部分 qB 无法连通', res.status === 'success' ? 'success' : 'error');
+        }).catch(err => alert('请求异常: ' + err));
+    }
+
+    function testQbSingle(ip) {
+        if(!isLoggedIn) return;
+        showToast(`正在测试 qB (${ip})...`, 'info');
+        fetch(`/api/test_qb?ip=${encodeURIComponent(ip)}`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(config)
+        }).then(r => r.json()).then(res => {
+            let msg = res.details ? res.details.join('\n') : res.message;
+            alert(msg);
+        }).catch(err => alert('请求异常: ' + err));
+    }
+
+    function testNotification() {
+        if(!isLoggedIn) return;
+        showToast('正在发送测试通知...', 'info');
+        fetch('/api/test_notify', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(config)
+        }).then(r => r.json()).then(res => {
+            showToast(res.message || '测试通知已发送', 'success');
+        }).catch(err => showToast('发送失败: ' + err, 'error'));
     }
 
     function loadLogs() {
